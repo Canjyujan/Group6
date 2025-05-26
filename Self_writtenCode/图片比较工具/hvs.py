@@ -3,6 +3,7 @@ import cv2
 from scipy.ndimage import gaussian_filter
 import os
 import random
+import pandas as pd
 
 
 # 图片预处理
@@ -61,12 +62,14 @@ def reshape_m():
     return M
 
 
-def compute_hash(image_path, N, key, M):
+def compute_hash(image_path, N, key, M, return_vector=False):
     processed_image = preprocess_image(image_path)
     dct_blocks = dct_image(processed_image)
     matrices = generate_random_matrices(N, key)
     Y = np.array([np.sum(dct_blocks * P * M) for P in matrices])
     hash_bits = (Y >= 0).astype(int)
+    if return_vector:
+        return hash_bits, Y
     return hash_bits
 
 
@@ -80,21 +83,18 @@ def compute_hamming_distance(hash_vec1, hash_vec2):
     return distance
 
 
-def compare_hash(image_path1, image_path2, N, key, tau):
-    M = reshape_m()
+def compare_hash(image_path1, image_path2, N, key, M, tau):
     hash_vec1 = compute_hash(image_path1, N, key, M)
     hash_vec2 = compute_hash(image_path2, N, key, M)
     distance = compute_hamming_distance(hash_vec1, hash_vec2)
-    if distance < tau:
-        return "两幅图片一致"
-    else:
-        return "两幅图片不一致"
+    return distance, hash_vec2
 
 
 def main(dataset_path):
     N = 100
     key = 12345
     tau = 0.1
+    M = reshape_m()
 
     image_files = [
         os.path.join(dataset_path, f)
@@ -105,19 +105,29 @@ def main(dataset_path):
     base_image_path = random.choice(image_files)
     print(f"基准图像: {base_image_path}")
 
+    base_hash, _ = compute_hash(base_image_path, N, key, M, return_vector=True)
+
     results = []
+
     for img_path in image_files:
         if img_path == base_image_path:
-            continue  # 跳过基准图自身
-        distance = compare_hash(base_image_path, img_path, N, key, tau)
-        results.append((img_path, distance))
+            continue  # 跳过自己
+        distance, hash_vec = compare_hash(base_image_path, img_path, N, key, M, tau)
+        status = "一致" if distance < tau else "不一致"
+        results.append({
+            "File": os.path.basename(img_path),
+            "Distance": round(float(distance), 4),
+            "Match": status,
+            "Hash": ''.join(map(str, hash_vec))
+        })
+        print(f"比对图像: {img_path}")
+        print(f"    哈希向量: {''.join(map(str, hash_vec))}")
+        print(f"    Hamming 距离: {distance:.4f} -> {status}")
 
-    # 按距离排序（从最相似到最不相似）
-    results.sort(key=lambda x: x[1])
-
-    # 输出比对结果
-    for img_path, dist in results:
-        print(f"比对图像: {img_path}, Hamming 距离: {dist}")
+    # 保存为 CSV
+    df = pd.DataFrame(results)
+    df.to_csv("hash_comparison_results.csv", index=False, encoding='utf-8-sig')
+    print("\n比对结果已保存至 hash_comparison_results.csv")
 
 
 if __name__ == "__main__":
