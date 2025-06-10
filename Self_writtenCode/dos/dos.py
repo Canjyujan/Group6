@@ -15,7 +15,10 @@ def randInt():
     x = random.randint(1000, 9000)
     return x
 
-  def UDP_Flood(dstIP, dstPort, counter):
+
+
+def UDP_Flood(dstIP, dstPort, counter):
+
     total = 0
     print("Packets are sending ...")<<<<<<< HEAD
     # 优化1: 预生成负载和基础数据包结构
