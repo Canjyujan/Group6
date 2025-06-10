@@ -34,7 +34,7 @@ def UDP_Flood(dstIP, dstPort, counter):
         if x % 100 == 0:
             sys.stdout.write(f"\rSent: {total}/{counter} packets")
             sys.stdout.flush()
-sys.stdout.write("\nTotal packets sent: %i\n" % total)
+    sys.stdout.write("\nTotal packets sent: %i\n" % total)
 
 def TCP_Flood(dstIP, dstPort, counter):
     total = 0
