@@ -16,7 +16,9 @@ def randInt():
     return x
 
 
+
 def UDP_Flood(dstIP, dstPort, counter):
+
     total = 0
     print("Packets are sending ...")<<<<<<< HEAD
     # 优化1: 预生成负载和基础数据包结构
@@ -37,8 +39,6 @@ def UDP_Flood(dstIP, dstPort, counter):
             sys.stdout.write(f"\rSent: {total}/{counter} packets")
             sys.stdout.flush()
 sys.stdout.write("\nTotal packets sent: %i\n" % total)
-
-
 
 
 
