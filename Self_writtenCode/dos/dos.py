@@ -16,6 +16,7 @@ def randInt():
     return x
 def UDP_Flood(dstIP, dstPort, counter):
     total = 0
+
 print("Packets are sending ...")
 # 优化2: 批量发送数据包减少系统调用
     packet_list = []
@@ -39,6 +40,7 @@ print("Packets are sending ...")
             sys.stdout.write(f"\rProgress: {total}/{counter} packets ({total/counter*100:.1f}%)")
             sys.stdout.flush()
 sys.stdout.write("\nTotal packets sent: %i\n" % total)
+
 
 
 
