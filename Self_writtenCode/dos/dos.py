@@ -4,6 +4,7 @@ import os
 import sys
 import random
 
+
 # 生成随机IP地址
 def randomIP():
     ip = ".".join(map(str, (random.randint(0, 255) for _ in range(4))))
